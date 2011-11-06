@@ -74,9 +74,13 @@ namespace crank
         {
             int processed = Math.Min(clients, batchSize);
 
+            var sw = Stopwatch.StartNew();
             Console.WriteLine("Remaining clients {0}", clients);
             return ConnectBatch(url, processed, connections).ContinueWith(t =>
             {
+                sw.Stop();
+                Console.WriteLine("Batch took {0}", sw.Elapsed);
+
                 int remaining = clients - processed;
 
                 if (remaining > 0)
