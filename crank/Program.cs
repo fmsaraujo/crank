@@ -18,7 +18,7 @@ namespace crank
             Console.WriteLine("Crank v{0}", typeof(Program).Assembly.GetName().Version);
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: crank [url] [numclients] [batchSize]");
+                Console.WriteLine("Usage: crank [url] [numclients] <batchSize> <batchInterval>");
                 return;
             }
 
@@ -28,6 +28,7 @@ namespace crank
             string url = args[0];
             int clients = Int32.Parse(args[1]);
             int batchSize = args.Length < 3 ? 50 : Int32.Parse(args[2]);
+            int batchInterval = args.Length < 4 ? 3000 : Int32.Parse(args[3]);
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
@@ -40,7 +41,7 @@ namespace crank
                 Console.WriteLine("Ramping up connections. Batch size {0}.", batchSize);
 
                 var rampupSw = Stopwatch.StartNew();
-                ConnectBatches(url, clients, batchSize, connections).ContinueWith(task =>
+                ConnectBatches(url, clients, batchSize, batchInterval, connections).ContinueWith(task =>
                 {
                     Console.WriteLine("Started {0} connection(s).", connections.Count);
 
@@ -69,22 +70,28 @@ namespace crank
             }
         }
 
-        private static Task ConnectBatches(string url, int clients, int batchSize, ConcurrentBag<Connection> connections)
+        private static Task ConnectBatches(string url, int clients, int batchSize, int batchInterval, ConcurrentBag<Connection> connections)
         {
-            if (clients > 0)
-            {
-                Console.WriteLine("Remaining clients {0}", clients);
-                return ConnectBatch(url, batchSize, connections).ContinueWith(t =>
-                {
-                    return ConnectBatches(url, clients - batchSize, batchSize, connections);
-                })
-                .Unwrap();
-            }
+            int processed = Math.Min(clients, batchSize);
 
-            // We're done
-            var tcs = new TaskCompletionSource<object>();
-            tcs.TrySetResult(null);
-            return tcs.Task;
+            Console.WriteLine("Remaining clients {0}", clients);
+            return ConnectBatch(url, processed, connections).ContinueWith(t =>
+            {
+                int remaining = clients - processed;
+
+                if (remaining > 0)
+                {
+                    // Give this batch a few seconds to connect
+                    Thread.Sleep(batchInterval);
+
+                    return ConnectBatches(url, remaining, batchSize, batchInterval, connections);
+                }
+
+                var tcs = new TaskCompletionSource<object>();
+                tcs.TrySetResult(null);
+                return tcs.Task;
+            })
+            .Unwrap();
         }
 
         private static Task ConnectBatch(string url, int batchSize, ConcurrentBag<Connection> connections)
@@ -131,8 +138,7 @@ namespace crank
 
                     if (Interlocked.Read(ref remaining) == 0)
                     {
-                        // Give this batch a few seconds to connect
-                        Thread.Sleep(5000);
+                        // When all connections are connected, mark the task as complete
                         tcs.TrySetResult(null);
                     }
                 });
