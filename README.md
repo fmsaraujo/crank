@@ -12,7 +12,7 @@ Crank is a load testing tool for SignalR.
 You can optionally change the batch size and timeout between batches.
 
 ## Getting the most out of crank
-When running `crank` on a client machine, you need to increase the MaxUserPort setting on the machine. For more 
+When running `crank` you need to increase the MaxUserPort setting on the machine. For more 
 information on how to do this, read this article:
 
 http://support.microsoft.com/kb/196271
