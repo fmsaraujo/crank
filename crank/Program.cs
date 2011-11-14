@@ -120,22 +120,19 @@ namespace crank
 
                         var clientId = connection.ClientId;
 
-                        connection.Received += data =>
-                        {
-                            Console.WriteLine("Client {0} RECEIVED: {1}", clientId, data);
-                        };
+                        //connection.Received += data =>
+                        //{
+                        //    Console.WriteLine("Client {0} RECEIVED: {1}", clientId, data);
+                        //};
 
                         connection.Error += e =>
                         {
-                            Console.WriteLine("Client {0} ERROR: {1}", clientId, e);
+                            Debug.WriteLine(String.Format("SIGNALR: Client {0} ERROR: {1}", clientId, e));
                         };
 
                         connection.Closed += () =>
                         {
-                            if (_running)
-                            {
-                                Console.WriteLine("Client {0} CLOSED", clientId);
-                            }
+                            Debug.WriteLine(String.Format("SIGNALR: Client {0} CLOSED", clientId));
                         };
 
                     }
