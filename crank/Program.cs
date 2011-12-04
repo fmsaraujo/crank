@@ -118,7 +118,7 @@ namespace crank
                     {
                         connections.Add(connection);
 
-                        var clientId = connection.ClientId;
+                        var clientId = connection.ConnectionId;
 
                         //connection.Received += data =>
                         //{
