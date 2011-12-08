@@ -1,0 +1,33 @@
+scenario
+{
+    name = "signalr_shaft";
+	warmup = 30;
+	duration = 90;
+	cooldown = 30;
+	default 
+	{
+		setheader
+		{
+			name = "Connection";
+			value = "keep-alive";
+		}
+		setheader
+		{
+			name = "Host";
+			value = server();
+		}
+		version = HTTP11;
+		statuscode = 200;
+		close = ka;
+	}
+	transaction
+	{
+		id = "shaft";
+		weight = 1000;
+		request
+		{
+			url = "/flywheel/shaft.ashx/connect?transport=foreverFrame&connectionId=1234567890";
+		}
+	}
+} 
+}
