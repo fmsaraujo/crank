@@ -26,7 +26,7 @@ scenario
 		weight = 1000;
 		request
 		{
-			url = "/flywheel/shaft.ashx/connect?transport=foreverFrame&connectionId=1234567890";
+			url = "/flywheel/shaft/connect?transport=foreverFrame&connectionId=" + vclientindex();
 		}
 	}
 } 

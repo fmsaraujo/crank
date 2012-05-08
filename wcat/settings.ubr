@@ -1,8 +1,8 @@
 settings
 {
-    server         = "damian-svr";
+    server         = "localhost";
     clients        = 1;
-    virtualclients = 1000;
+    virtualclients = 10;
 
     counters
     {
