@@ -28,7 +28,7 @@ namespace crank
             string url = args[0];
             int clients = Int32.Parse(args[1]);
             int batchSize = args.Length < 3 ? 50 : Int32.Parse(args[2]);
-            int batchInterval = args.Length < 4 ? 3000 : Int32.Parse(args[3]);
+            int batchInterval = args.Length < 4 ? 500 : Int32.Parse(args[3]);
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
@@ -100,16 +100,21 @@ namespace crank
 
         private static Task ConnectBatch(string url, int batchSize, ConcurrentBag<Connection> connections)
         {
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = batchSize
+            };
+
             var tcs = new TaskCompletionSource<object>();
             long remaining = batchSize;
-            Parallel.For(0, batchSize, i =>
+            Parallel.For(0, batchSize, options, i =>
             {
                 var connection = new Connection(url);
 
                 connection.Start().ContinueWith(task =>
                 {
                     remaining = Interlocked.Decrement(ref remaining);
-
+                    
                     if (task.IsFaulted)
                     {
                         Console.WriteLine("Failed to start client. {0}", task.Exception.GetBaseException());
